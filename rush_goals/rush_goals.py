@@ -225,7 +225,7 @@ def find_rush_goals(dict_goal_pp_loc: Dict[str, GoalCoords]) -> pl.DataFrame:
 
     
 if __name__ == '__main__':
-    EXPORT_FILE_PATH = '2025_2026_rush_goals.parquet'
+    EXPORT_FILE_PATH = '2025_2026_rush_goals.csv'
 
     # read in and parse the combined location and empty-net data
     df_pp_loc_eng = pl.read_parquet('2025_2026_coords_eng.csv')
