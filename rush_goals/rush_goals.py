@@ -238,3 +238,5 @@ if __name__ == '__main__':
     # find the rush goals and export the results
     df_rush_goals = find_rush_goals(dict_goal_pp_loc=dict_goal_pp_loc)
     df_rush_goals.write_csv(EXPORT_FILE_PATH)
+
+
