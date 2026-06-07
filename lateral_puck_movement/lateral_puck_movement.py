@@ -55,6 +55,7 @@ def main():
     df_api_data_goals = pl.read_parquet('25_26_regl_season_goal_data.parquet')
 
     # read in dataframe with empty net goal data
+    # has columns for game id, goal id, and if a goal is empty-net or not
     df_pp_loc_eng = pl.read_parquet('../rush_goals/2025_2026_coords_eng.parquet')
 
     df_api_data_goals_sans_engs = df_pp_loc_eng.join(df_api_data_goals, on=['game_id', 'goal_id'])
@@ -64,7 +65,7 @@ def main():
 
     df_api_data_goals_converted = convert_api_coords(df_api_data_goals_sans_engs)
 
-    # go thr/ all goals and rotate as needed
+    # go through all goals and rotate as needed
     rot_x = []
     rot_y = []
     rot_bools = []
