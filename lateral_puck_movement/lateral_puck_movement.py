@@ -65,32 +65,6 @@ def main():
 
     df_api_data_goals_converted = convert_api_coords(df_api_data_goals_sans_engs)
 
-    # go through all goals and rotate as needed
-    # rot_x = []
-    # rot_y = []
-    # rot_bools = []
-
-    # for row in df_api_data_goals_converted.rows(named=True):
-    #     x = row['anim_x']
-    #     y = row['anim_y']
-    #     scoring_team_id = row['scoring_team_id']
-    #     home_team_defending_side = row['home_team_defending_side']
-    #     home_team_id = row['home_team_id']
-    #     rot_coord, is_rot = rotate_goal_coords(
-    #         x, y, 
-    #         scoring_team_id=scoring_team_id, 
-    #         home_team_defending_side=home_team_defending_side, 
-    #         home_team_id=home_team_id
-    #     )
-    #     rot_x.append(rot_coord.x)
-    #     rot_y.append(rot_coord.y)
-    #     rot_bools.append(is_rot)
-
-    # df_api_data_goals_rot = df_api_data_goals_converted.with_columns(
-    #     pl.Series(values=rot_x, name='rot_x'),
-    #     pl.Series(values=rot_y, name='rot_y'),
-    #     pl.Series(values=rot_bools, name='is_rot')
-    # )
     df_api_data_goals_rot = rotate_multiple_goals(df_api_data_goals_converted)
 
     df_lat_puck = lat_puck_move_df(

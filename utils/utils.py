@@ -223,7 +223,7 @@ def find_orig_shot_nondeflection(
         - shot_y (float): shot y coordinate converted from API coordinates to animation coordinates
     
     RETURNS:    
-        - orig_goal_backward_ind (int): index for the backward coordinate list
+        - orig_goal_backward_ind (int or None): index for the backward coordinate list
             for the original shot
             Is None if the original shot can't be found in the tracking data
     """
@@ -241,16 +241,16 @@ def find_orig_shot_nondeflection(
 
         dist_fr_api_shot = dist(x, y, shot_x, shot_y)
         
-        # update info about the shot location
+        # update info about the tip
         if (dist_fr_api_shot < min_dist_fr_api_shot) and (dist_fr_api_shot < DIST_DIFF_THRES):
             min_dist_fr_api_shot = dist_fr_api_shot
 
-            # update the shot location based on the puck's tracking data
+            # update the tip loc based on the puck's tracking data
             orig_goal_backward_ind = i
         
         if orig_goal_backward_ind is not None:
             num_timesteps_post_init += 1
-
+    
         # early return so don't have to go thr/ the rest of the tracking data
         if num_timesteps_post_init > TIMESTEPS_POST_INIT_THRES:
             return orig_goal_backward_ind
@@ -259,6 +259,7 @@ def find_orig_shot_nondeflection(
         return None
     else:
         return orig_goal_backward_ind
+
 
 def find_orig_shot_defl(l_coords: List[tuple[float, float]], shot_x: float, shot_y: float) -> int|None:
     """
@@ -277,7 +278,6 @@ def find_orig_shot_defl(l_coords: List[tuple[float, float]], shot_x: float, shot
     """
     DIST_DIFF_THRES = 47
     ANGLE_THRES = 20
-
     MAX_SHOT_POS_NUM_TIMESTEPS = 10 # max number of timesteps above which we won't assign the shot's api
                                     # loc to the timepstep's anim loc
 
@@ -285,6 +285,7 @@ def find_orig_shot_defl(l_coords: List[tuple[float, float]], shot_x: float, shot
     min_dist_fr_api_shot = 99999
     tip_backwards_timestep = None
     orig_goal_backward_ind = None
+
     for i, (x, y) in enumerate(l_coords[::-1]):
 
         dist_fr_api_shot = dist(x, y, shot_x, shot_y)
