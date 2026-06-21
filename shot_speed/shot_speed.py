@@ -40,7 +40,11 @@ def main():
         pl.col('is_eng'),
         pl.col('shot_type'),
         pl.col('scoring_team_id'),
-        pl.col('shot_speed')
+        pl.col('shot_speed'),
+        pl.col('rot_x'),
+        pl.col('rot_y'),
+        pl.col('updated_x'),
+        pl.col('updated_y')
     )
 
     # export the result
@@ -63,12 +67,14 @@ def find_orig_shot_nondefl_speed(l_coords: List[tuple[float, float]], shot_x: fl
         - first_backward_ind (int): index for when to start the tracking data, 
             when going backwards
     """
-    DIST_DIFF_THRES = 120 # threshold for how far away a coordinate can be from the API shot location
+    DIST_DIFF_THRES = 140 # threshold for how far away a coordinate can be from the API shot location
     CHANGE_DIST_THRES_TWO = 65
     CHANGE_DIST_THRES = 40
     ANGLE_THRES = 20
     TIMESTEPS_POST_INIT_THRES = 3 # the number of steps to continue after
                                   # finding a location close enough to the API shot location
+    MAX_SHOT_POS_NUM_TIMESTEPS = 10 # max number of timesteps above which we won't assign the shot's api
+                                    # loc to the timepstep's anim loc
 
     # go thr/ goal backward
     min_dist_fr_api_shot = 99999
@@ -122,7 +128,8 @@ def find_orig_shot_nondefl_speed(l_coords: List[tuple[float, float]], shot_x: fl
 
         # early return so don't have to go thr/ the rest of the tracking data
         if (num_timesteps_post_init > TIMESTEPS_POST_INIT_THRES) or\
-            ((angle_at_prev_spot > ANGLE_THRES) and (min_dist_fr_api_shot < 99999)):
+            (i >= MAX_SHOT_POS_NUM_TIMESTEPS) or\
+            (((dist_diff > spot_change_dist_thres) or (angle_at_prev_spot > ANGLE_THRES)) and (min_dist_fr_api_shot < 99999)):
             return orig_goal_backward_ind
             
 
@@ -181,11 +188,14 @@ def shot_speed_df(df_goals: pl.DataFrame) -> pl.DataFrame:
             
     RETURNS:
         - df_shot_speed (polars.DataFrame): df_goals with an additional
-            "shot_speed" column
+            "shot_speed" column and a "updated_x" and "updated_y" column for 
+            where the original shot is
     """
     NUM_INTERVALS = 1 # how many intervals to use when calculating the shot speed
     
     l_shot_speeds = []
+    updated_xs = []
+    updated_ys = []
     
     for row in df_goals.rows(named=True):
         x_coords = row['x_coordinates']
@@ -209,11 +219,19 @@ def shot_speed_df(df_goals: pl.DataFrame) -> pl.DataFrame:
         except Exception as e:
             print(f'Error for {row["game_id"]}, {row["goal_id"]}: {e}')
             l_shot_speeds.append(None)
+            updated_xs.append(None)
+            updated_ys.append(None)
             continue
         if backward_shot_ind is None:
             print(f'No shot found for {row["game_id"]}, {row["goal_id"]}')
             l_shot_speeds.append(None)
+            updated_xs.append(None)
+            updated_ys.append(None)
             continue
+
+        # get updated shot location
+        updated_x = l_coords[::-1][backward_shot_ind][0]
+        updated_y = l_coords[::-1][backward_shot_ind][1]
 
         first_ind = len(l_coords)-backward_shot_ind-1
         last_ind = len(l_coords)-backward_shot_ind+NUM_INTERVALS
@@ -227,11 +245,17 @@ def shot_speed_df(df_goals: pl.DataFrame) -> pl.DataFrame:
         except Exception as e:
             print(f'Unable to calcuate shot speed for {row["game_id"]}, {row["goal_id"]}: {e}')
             l_shot_speeds.append(None)
+            updated_xs.append(None)
+            updated_ys.append(None)
             continue
         l_shot_speeds.append(shot_speed)
+        updated_xs.append(updated_x)
+        updated_ys.append(updated_y)
     
     df_shot_speed = df_goals.with_columns(
-        pl.Series(values=l_shot_speeds, name='shot_speed')
+        pl.Series(values=l_shot_speeds, name='shot_speed'),
+        pl.Series(values=updated_xs, name='updated_x'),
+        pl.Series(values=updated_ys, name='updated_y')
     )
     return df_shot_speed
 

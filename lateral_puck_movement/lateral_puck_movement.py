@@ -48,7 +48,7 @@ def main():
     """
     Calculates the total lateral puck movement for all goals
     """
-    NUM_TIMESTEPS = 7
+    NUM_TIMESTEPS = 10
     
     # read in API data for goals, including shot type, location, game id, goal id
     # scoring team id, home team defending side, and home team id
@@ -79,7 +79,7 @@ def main():
     )
     
     # export the result
-    df_lat_puck.write_csv('lat_puck_move_7.csv')
+    df_lat_puck.write_csv('lat_puck_move_10.csv')
 
 
 def get_goal_data(game_id: int) -> GamePbp:

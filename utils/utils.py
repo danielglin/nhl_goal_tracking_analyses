@@ -316,7 +316,7 @@ def find_orig_shot_defl(l_coords: List[tuple[float, float]], shot_x: float, shot
             (i > (tip_backwards_timestep+1))) and\
             ((dist_diff>DIST_DIFF_THRES) or\
             (angle_at_spot>ANGLE_THRES)):
-            orig_goal_backward_ind = i
+            orig_goal_backward_ind = i-1
             break
 
     return orig_goal_backward_ind
